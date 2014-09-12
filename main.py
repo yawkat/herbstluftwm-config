@@ -19,6 +19,28 @@ def wallpaper_loop():
 
 singleton("wallpaper", wallpaper_loop)
 
+def battery_notify_loop():
+    sent = False
+    while True:
+        perc = 0
+        discharging = False
+        for line in command_stream("upower", "-d"):
+            if line.startswith("    percentage:"):
+                perc = int(line[25:-2])
+                if perc > 0:
+                    break
+            elif line.startswith("    state:") and line[25:-1] == "discharging":
+                discharging = True
+        if discharging and perc > 0 and perc < 15:
+            if not sent:
+                sent = True
+                command("notify-send", "--urgency=critical", "--expire-time=20000", "Battery Low!", "Battery charge below 15%")
+        else:
+            sent = False
+        time.sleep(30)
+
+singleton("battery-warning", battery_notify_loop)    
+
 tags = ("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
 try:
     hc("rename", "default", tags[0])
