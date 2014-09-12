@@ -12,7 +12,7 @@ from daemon import *
 key_modifier = "Mod4"
 
 def wallpaper_loop():
-    image_dir = os.path.join(os.path.dirname(__file__), "Wallpapers", "images")
+    image_dir = os.path.join(os.path.dirname(__file__), "wallpapers", "images")
     while True:
         os.system("feh --randomize --recursive --bg-fill " + image_dir)
         time.sleep(500)
