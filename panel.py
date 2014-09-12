@@ -55,6 +55,8 @@ class Panel():
         self.tag_string = ""
 
     def launch(self):
+        hc("pad", self.monitor, height)
+
         dzen_line = ("dzen2",)
         dzen_line += ("-x", str(self.dimensions[0]))
         dzen_line += ("-y", str(self.dimensions[1]))
