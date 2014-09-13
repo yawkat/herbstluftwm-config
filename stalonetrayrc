@@ -1,0 +1,5 @@
+background "#002b36"
+geometry 1x1+800+1
+max_geometry 0x1+800+1
+icon_size 16
+sticky true

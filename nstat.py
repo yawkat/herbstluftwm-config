@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 import time
-import herbstclient
+import daemon
 
 up = 0
 down = 0
@@ -11,7 +11,7 @@ def update():
     global up, down
     up *= 1 - _weight
     down *= 1 - _weight
-    for line in herbstclient.command_stream("nstat", "-t", "1"):
+    for line in daemon.command_stream("nstat", "-t", "1"):
         if line[0] == "#":
             continue
         name = line[:32].strip()

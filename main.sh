@@ -112,11 +112,3 @@ hc rule windowtype~'_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK|DESKTOP)' manage=off
 hc unlock
 
 herbstclient set tree_style '╾│ ├└╼─┐'
-
-sleep 0.1
-
-killall stalonetray
-stalonetray -bg "#002b36" --geometry 1x1+800+1 --icon-size 16 --sticky &
-
-killall xfce4-volumed
-xfce4-volumed --no-daemon &

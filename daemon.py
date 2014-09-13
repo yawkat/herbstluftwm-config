@@ -6,21 +6,50 @@ import threading
 import signal
 import sys
 import traceback
+import time
+import subprocess
 
 source_dir = path.dirname(__file__)
 
-def run_fork(name, function):
+_children = []
+
+def _kill_children(sign):
+    for child in _children:
+        try:
+            log("Sending %s to %s" % (sign, child))
+            os.kill(child, sign)
+        except:
+            traceback.print_exc()
+
+def term(*args):
+    _kill_children(signal.SIGTERM)
+    time.sleep(1)
+    _kill_children(signal.SIGKILL)
+signal.signal(signal.SIGTERM, term)
+
+def command_stream(*components):
+    components = map(lambda c: str(c), components)
+    log("Executing " + str(components))
+    proc = subprocess.Popen(components, stdout=subprocess.PIPE)
+    _children.append(proc.pid)
+    return proc.stdout
+
+def command(*components):
+    return command_stream(*components).read()
+
+def run_fork(name, function, delay=0):
     child_pid = os.fork()
     if child_pid is 0:
         log_dir = path.join(source_dir, "log")
         flags = os.O_CREAT | os.O_WRONLY | os.O_TRUNC
-        os.dup2(os.open(path.join(log_dir, name + ".out"), flags), 1)
-        os.dup2(os.open(path.join(log_dir, name + ".err"), flags), 2)
+        f = name # + "_" + str(os.getpid())
+        os.dup2(os.open(path.join(log_dir, f + ".out"), flags), 1)
+        os.dup2(os.open(path.join(log_dir, f + ".err"), flags), 2)
         log("Output redirected")
         try:
+            time.sleep(delay)
             function()
         except:
-            log("Error!")
             traceback.print_exc()
         sys.exit(0)
     return child_pid
@@ -30,15 +59,20 @@ def run_thread(name, function, daemon=True):
     thread.daemon = daemon
     thread.start()
 
-def singleton(name, function):
+def singleton(name, function, delay=0):
     pid_file = path.join(source_dir, "pid", name + ".pid")
     if path.isfile(pid_file):
         with open(pid_file, "r") as fd:
             try:
-                os.kill(int(fd.read()), signal.SIGTERM)
+                pid = int(fd.read())
+                os.kill(pid, signal.SIGTERM)
+                def kill_final():
+                    thread.sleep(1)
+                    os.kill(pid, signal.SIGKILL)
+                run_thread("kill_" + name, kill_final)
             except:
                 pass
-    child_pid = run_fork(name, function)
+    child_pid = run_fork(name, function, delay=delay)
     with open(pid_file, "w") as fd:
         fd.write(str(child_pid))
 

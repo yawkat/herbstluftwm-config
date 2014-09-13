@@ -36,7 +36,19 @@ def battery_notify_loop():
                     sent = False
         time.sleep(30)
 
-singleton("battery-warning", battery_notify_loop)    
+singleton("battery-warning", battery_notify_loop)
+
+def tray():
+    command("stalonetray", "-c", "stalonetrayrc")
+singleton("tray", tray, delay=1)
+
+def nmapplet():
+    command("nm-applet")
+singleton("nm-applet", nmapplet, delay=2)
+
+def volumed():
+    command("xfce4-volumed", "--no-daemon")
+singleton("volumed", volumed)
 
 tags = ("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
 try:

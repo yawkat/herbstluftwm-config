@@ -2,7 +2,7 @@
 
 import sys
 import time
-import herbstclient
+import daemon
 import gradient
 import time
 
@@ -82,6 +82,6 @@ class Power():
             if stamp - self.last_update < min_age:
                 return
             self.last_update = stamp
-        self.update(herbstclient.command_stream("upower", "-d"))
+        self.update(daemon.command_stream("upower", "-d"))
 
 instance = Power()
