@@ -26,10 +26,10 @@ units = ("B", "K", "M", "G")
 
 def human_readable(num):
     for unit in units[:-1]:
-        if num < 1024:
-            return "%4.1f%s" % (num, unit)
+        if num < 1000:
+            return "%05.1f%s" % (num, unit)
         num /= 1024.0
-    return "%4.1f%s" % (num, units[-1])
+    return "%05.1f%s" % (num, units[-1])
 
 update()
 up = down = 0
