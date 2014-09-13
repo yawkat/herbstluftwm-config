@@ -23,12 +23,14 @@ font = "-*-fixed-medium-*-*-*-12-*-*-*-*-*-*-*"
 separator="^bg()^fg(" + background + ")|^fg(" + foreground + ")"
 format_re = re.compile(r"\^[^(]*\([^)]*\)")
 
+# repeating task (update battery status etc)
 class Task():
     def __init__(self, task, interval):
         self.task = task
         self.interval = interval
         self._next = 0
 
+    # run this task if it's due, returns True if it was executed.
     def tick(self):
         if self._next <= 0:
             self.task()
@@ -60,6 +62,7 @@ class Panel():
     def launch(self):
         hc("pad", self.monitor, height)
 
+        # launch dzen (we pipe commands into its stdin to update the panel)
         dzen_line = ("dzen2",)
         dzen_line += ("-x", str(self.dimensions[0]))
         dzen_line += ("-y", str(self.dimensions[1]))
@@ -74,10 +77,12 @@ class Panel():
 
         self.update_tags()
 
+        # start running thhe tasks
         run_thread("tasks_" + self.monitor, self.run_tasks)
 
         self.update()
 
+        # listen for events from 'herbstclient --idle' (panel switch, window events, etc)
         event_proc = hc_stream("--idle")
         log("Waiting for events ")
         while True:
@@ -89,10 +94,12 @@ class Panel():
             update = False
             for task in self.tasks:
                 update |= task.tick()
+            # if a task ran, we need to update the panel
             if update:
                 self.update()
             time.sleep(1)
 
+    # update the tag display (selected tag etc)
     def update_tags(self):
         val = ""
         tags = hc("tag_status").strip().split("\t")
@@ -101,30 +108,34 @@ class Panel():
             name = tag[1:]
             code = tag[0]
             val += "^bg()"
-            if code == "#":
+            if code == "#": # selected
                 val += "^fg(#fdf6e3)"
-            elif code == "+" or code == "!":
+            elif code == "+" or code == "!": # notification
                 val += "^fg(#cb4b16)"
-            elif code == ":":
+            elif code == ":": # has apps on it
                 val += "^fg(#93a1a1)"
-            else:
+            else: # empty
                 val += "^fg(#586e75)"
             val += "^ca(1,herbstclient use \"" + name + "\") "
             val += name
             val += " ^ca()"
         self.tag_string = val
 
+    # update the battery display
     def update_battery(self):
         upower.instance.update_upower(min_age=20)
         self.battery = " | ".join(map(upower.Device.format_panel, upower.instance.devices))
 
+    # update the network traffic display
     def update_traffic(self):
         nstat.update()
         self.traffic = "^fg(#cb4b16)%s ^fg(#b58900)%s" % (nstat.human_readable(nstat.down), nstat.human_readable(nstat.up))
 
+    # update the timestamp
     def update_date(self):
         self.date = time.strftime("%Y-%m-%d, %H:%M:%S")
 
+    # update the cpu/ram/swap display
     def update_load(self):
         def perc(perc, name):
             col = gradient.fraction_color(1 - perc * 0.01)
@@ -137,25 +148,32 @@ class Panel():
 
         self.load = perc(self.load_weighted, "C") + " " + perc(mem, "M") + " " + perc(swap, "S") + "^fg()"
 
+    # rebuild the panel string and display it
     def update(self):
+        # tags first
         val = ""
         val += self.tag_string
         val += separator + " "
+        # current window title
         val += self.window_title.replace("^", "^^")
 
+        # date and such on the right
         right = separator + "^bg() "
         right += (" " + separator + " ").join((self.date, self.load, self.traffic, self.battery))
 
+        # calculate right-aligned size
         right_no_format = format_re.sub("", right)
         right_width = text_width(right_no_format + (" " * 8))
 
+        # padding for right-aligned text
         val += "^pa(" + str(self.dimensions[2] - right_width) + ")"
         val += right
 
+        # newline to finish command for dzen2
         val += "\n"
-        log("New bar: " + val)
         self.dzen2.stdin.write(val)
 
+    # called when a herbstclient event occurs
     def hc_event(self, event):
         log("Event: " + event)
         if "\t" in event:
@@ -175,9 +193,8 @@ def text_width(text):
     return int(command("dzen2-textwidth", font, text.encode('ascii','ignore')))
 
 def launch(monitor):
-    singleton("panel_" + monitor, lambda: do_launch(monitor))
+    singleton("panel_" + monitor, lambda: _do_launch(monitor))
 
-def do_launch(monitor):
-    log("do_launch " + monitor)
+def _do_launch(monitor):
     Panel(monitor).launch()
 

@@ -1,11 +1,14 @@
 #!/usr/bin/env python2
 
+# upower (battery monitor) access
+
 import sys
 import time
 import daemon
 import gradient
 import time
 
+# parse a time string as used by upower -d
 def ptime(time_string):
     number = float(time_string[:time_string.index(" ")].replace(",", "."))
     unit = time_string[time_string.index(" ")+1:]
@@ -17,6 +20,7 @@ def ptime(time_string):
         number /= 60
     return int(number)
 
+# device state
 STATE_NOT_CHARGING = 0
 STATE_CHARGING = 1
 STATE_UNKNOWN = -1
@@ -27,6 +31,7 @@ class Device():
         self.state = STATE_UNKNOWN
         self.finish_time = 0
 
+    # format for panel display
     def format_panel(self):
         if self.state is STATE_NOT_CHARGING:
             state = u"-"
@@ -43,6 +48,7 @@ class Device():
 
     @property
     def valid(self):
+        # if charge is 0 the device either defaults to 0 or doesn't report charge at all and thus isn't a battery device (usually)
         return self.charge > 0
 
 class Power():
@@ -55,6 +61,7 @@ class Power():
         reading = Device()
 
         self.components = []
+        # parse upower output
         for line in lines:
             if line.startswith("Device: "):
                 if reading.valid:
@@ -76,6 +83,7 @@ class Power():
 
         self.devices = devices
 
+    # parse from upower -d output if the data is older than min_age seconds
     def update_upower(self, min_age=0):
         if min_age > 0:
             stamp = time.time()
@@ -84,4 +92,5 @@ class Power():
             self.last_update = stamp
         self.update(daemon.command_stream("upower", "-d"))
 
+# instance that should only be used with Power.update_upower
 instance = Power()
