@@ -44,7 +44,7 @@ class Panel():
         self.tasks = [
             Task(self.update_date, 1),
             Task(self.update_load, 1),
-            Task(self.update_battery, 20)
+            Task(self.update_battery, 5)
         ]
 
         self.window_title = ""
@@ -112,8 +112,8 @@ class Panel():
         self.tag_string = val
 
     def update_battery(self):
-        upower.global_battery.update_upower()
-        self.battery = " | ".join(upower.global_battery.components)
+        upower.instance.update_upower(min_age=20)
+        self.battery = " | ".join(map(upower.Device.format_panel, upower.instance.devices))
 
     def update_date(self):
         self.date = time.strftime("%Y-%m-%d, %H:%M:%S")
@@ -121,7 +121,7 @@ class Panel():
     def update_load(self):
         def perc(perc, name):
             col = gradient.fraction_color(1 - perc * 0.01)
-            return "^fg(#%s)%s:%04.1f%%" % (col, name, perc)
+            return "^fg(#%s)%04.1f%%" % (col, perc)
 
         cpu = psutil.cpu_percent()
         mem = psutil.virtual_memory().percent

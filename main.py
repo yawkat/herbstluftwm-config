@@ -5,6 +5,7 @@ from os import path
 import time
 
 import panel
+import upower
 
 from herbstclient import *
 from daemon import *
@@ -22,21 +23,17 @@ singleton("wallpaper", wallpaper_loop)
 def battery_notify_loop():
     sent = False
     while True:
-        perc = 0
-        discharging = False
-        for line in command_stream("upower", "-d"):
-            if line.startswith("    percentage:"):
-                perc = int(line[25:-2])
-                if perc > 0:
-                    break
-            elif line.startswith("    state:") and line[25:-1] == "discharging":
-                discharging = True
-        if discharging and perc > 0 and perc < 15:
-            if not sent:
-                sent = True
-                command("notify-send", "--urgency=critical", "--expire-time=20000", "Battery Low!", "Battery charge below 15%")
-        else:
-            sent = False
+        upower.instance.update_upower(min_age=30)
+        if len(upower.instance.devices) is not 0:
+            device = upower.instance.devices[0]
+            if device.valid:
+                log("State: %s  Charge: %s" % (device.state, device.charge))
+                if device.state is upower.STATE_NOT_CHARGING and device.charge < 0.15:
+                    if not sent:
+                        sent = True
+                        command("notify-send", "--urgency=critical", "--expire-time=20000", "Battery Low!", "Battery charge below 15%")
+                else:
+                    sent = False
         time.sleep(30)
 
 singleton("battery-warning", battery_notify_loop)    
