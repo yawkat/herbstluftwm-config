@@ -8,6 +8,7 @@ import psutil
 
 import upower
 import gradient
+import nstat
 
 from herbstclient import *
 from daemon import *
@@ -44,11 +45,13 @@ class Panel():
         self.tasks = [
             Task(self.update_date, 1),
             Task(self.update_load, 1),
+            Task(self.update_traffic, 1),
             Task(self.update_battery, 5)
         ]
 
         self.window_title = ""
         self.battery = ""
+        self.traffic = ""
         self.date = ""
         self.load = ""
         self.load_weighted = 0
@@ -115,6 +118,10 @@ class Panel():
         upower.instance.update_upower(min_age=20)
         self.battery = " | ".join(map(upower.Device.format_panel, upower.instance.devices))
 
+    def update_traffic(self):
+        nstat.update()
+        self.traffic = "^fg(#cb4b16)%s ^fg(#b58900)%s" % (nstat.human_readable(nstat.down), nstat.human_readable(nstat.up))
+
     def update_date(self):
         self.date = time.strftime("%Y-%m-%d, %H:%M:%S")
 
@@ -137,11 +144,7 @@ class Panel():
         val += self.window_title.replace("^", "^^")
 
         right = separator + "^bg() "
-        right += self.date
-        right += " " + separator + " "
-        right += self.load
-        right += " " + separator + " "
-        right += self.battery
+        right += (" " + separator + " ").join((self.date, self.load, self.traffic, self.battery))
 
         right_no_format = format_re.sub("", right)
         right_width = text_width(right_no_format + (" " * 8))
