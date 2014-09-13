@@ -43,7 +43,7 @@ class Device():
             finish_time = ""
         else:
             finish_time = " " + str(self.finish_time) + "m"
-        color = gradient.fraction_color(1 - self.charge * 0.01)
+        color = gradient.fraction_color(self.charge)
         return "^fg(#%s)%s%%^fg()%s %s" % (color, self.charge * 100, finish_time, state.encode("utf-8"))
 
     @property
