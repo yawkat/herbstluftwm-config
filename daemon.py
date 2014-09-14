@@ -10,10 +10,11 @@ import sys
 import traceback
 import time
 import subprocess
+import setproctitle
 
 source_dir = path.dirname(__file__)
 
-# list of pids of child processes staarted by command[_stream]
+# list of pids of child processes started by command[_stream] and run_fork
 _children = []
 
 def _kill_children(sign):
@@ -56,12 +57,14 @@ def run_fork(name, function, delay=0):
         os.dup2(os.open(path.join(log_dir, f + ".out"), flags), 1)
         os.dup2(os.open(path.join(log_dir, f + ".err"), flags), 2)
         log("Output redirected")
+        setproctitle.setproctitle(setproctitle.getproctitle() + " > " + name)
         try:
             time.sleep(delay)
             function()
         except:
             traceback.print_exc()
         sys.exit(0)
+    _children.append(child_pid)
     return child_pid
 
 # run a daemon thread with the given name and target function
