@@ -23,7 +23,7 @@ def _kill_children(sign):
             log("Sending %s to %s" % (sign, child))
             os.kill(child, sign)
         except:
-            traceback.print_exc()
+            pass
 
 # run on exit, kill all children
 def term(*args):
