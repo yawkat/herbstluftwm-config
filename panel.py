@@ -1,5 +1,6 @@
 #!/usr/bin/env python2
 
+import os
 import sys
 import subprocess
 import re
@@ -81,6 +82,16 @@ class Panel():
         run_thread("tasks_" + self.monitor, self.run_tasks)
 
         self.update()
+
+        bind(("Mod4", "plus"), ("spawn", os.path.join(os.path.dirname(__file__), "run", "toggle.sh"), str(self.dimensions[2])))
+
+        tray_position = self.dimensions[2] - 550
+        geom = "1x1+%s+1" % tray_position
+        geom_max = "1x1+%s+1" % tray_position
+        # system tray
+        def tray():
+            command("stalonetray", "-c", "stalonetrayrc", "--geometry", geom, "--max-geometry", geom_max)
+        singleton("tray_" + self.monitor, tray, delay=1)
 
         # listen for events from 'herbstclient --idle' (panel switch, window events, etc)
         event_proc = hc_stream("--idle")

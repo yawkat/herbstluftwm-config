@@ -1,6 +1,4 @@
 background "#002b36"
-geometry 1x1+1010+1
-max_geometry 0x1+1010+1
 icon_size 16
 sticky true
 grow_gravity NE

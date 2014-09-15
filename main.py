@@ -38,11 +38,6 @@ def battery_notify_loop():
         time.sleep(30)
 singleton("battery-warning", battery_notify_loop)
 
-# system tray
-def tray():
-    command("stalonetray", "-c", "stalonetrayrc")
-singleton("tray", tray, delay=1)
-
 # network manager tray app
 def nmapplet():
     command("nm-applet")

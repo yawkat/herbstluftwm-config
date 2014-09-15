@@ -16,7 +16,6 @@ Mod=Mod4   # Use the super key as the main modifier
 
 hc keybind $Mod-Shift-r reload
 hc keybind Mod1-F4 close
-hc keybind $Mod-plus spawn $(readlink -f $(dirname $0))/run/toggle.sh
 hc keybind $Mod-Return spawn xfce4-terminal
 
 # basic movement
