@@ -112,6 +112,8 @@ hc rule --class=Quasselclient --tag=4
 hc rule --class=Steam --tag=9
 hc rule --class=Thunderbird --tag=0
 
+hc default_frame_layout 3
+
 # unlock, just to be sure
 hc unlock
 
