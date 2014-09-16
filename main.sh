@@ -113,6 +113,9 @@ hc rule --class=Steam --tag=9
 hc rule --class=Thunderbird --tag=0
 
 hc keybind $Mod-numbersign spawn $(readlink -f $(dirname $0))/screenshot/screenshot.py
+hc keybind $Mod-Pause spawn rhythmbox-client --play-pause
+hc keybind $Mod-Insert spawn rhythmbox-client --previous
+hc keybind $Mod-Delete spawn rhythmbox-client --next
 
 hc set default_frame_layout 3
 
