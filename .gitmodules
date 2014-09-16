@@ -4,3 +4,6 @@
 [submodule "run"]
 	path = run
 	url = git@github.com:yawkat/run.git
+[submodule "screenshot"]
+	path = screenshot
+	url = git@github.com:yawkat/screenshot-python.git

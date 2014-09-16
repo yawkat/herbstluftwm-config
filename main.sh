@@ -112,7 +112,9 @@ hc rule --class=Quasselclient --tag=4
 hc rule --class=Steam --tag=9
 hc rule --class=Thunderbird --tag=0
 
-hc default_frame_layout 3
+hc keybind $Mod-numbersign spawn $(readlink -f $(dirname $0))/screenshot/screenshot.py
+
+hc set default_frame_layout 3
 
 # unlock, just to be sure
 hc unlock
