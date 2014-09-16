@@ -44,6 +44,9 @@ command_singleton("nm-applet", ("nm-applet",), delay=2)
 # volume keys
 command_singleton("volumed", ("xfce4-volumed", "--no-daemon"))
 
+# hotkeys
+command_singleton("hotkeys", ("xbindkeys",))
+
 # tags
 tags = ("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
 try:
