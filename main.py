@@ -39,14 +39,10 @@ def battery_notify_loop():
 singleton("battery-warning", battery_notify_loop)
 
 # network manager tray app
-def nmapplet():
-    command("nm-applet")
-singleton("nm-applet", nmapplet, delay=2)
+command_singleton("nm-applet", ("nm-applet",), delay=2)
 
 # volume keys
-def volumed():
-    command("xfce4-volumed", "--no-daemon")
-singleton("volumed", volumed)
+command_singleton("volumed", ("xfce4-volumed", "--no-daemon"))
 
 # tags
 tags = ("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")

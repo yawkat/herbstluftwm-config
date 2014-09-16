@@ -92,6 +92,9 @@ def singleton(name, function, delay=0):
     with open(pid_file, "w") as fd:
         fd.write(str(child_pid))
 
+def command_singleton(name, command_components, delay=0):
+    singleton(name, lambda: command(*command_components), delay=delay)
+
 # log a message, print replacement that works with forked instances
 def log(msg, err=False):
     chan = 1
