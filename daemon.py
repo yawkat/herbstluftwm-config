@@ -82,7 +82,7 @@ def singleton(name, function, delay=0):
                 pid = int(fd.read())
                 os.kill(pid, signal.SIGTERM)
                 def kill_final():
-                    thread.sleep(1)
+                    time.sleep(1)
                     os.kill(pid, signal.SIGKILL)
                 # try kill too after 1s
                 run_thread("kill_" + name, kill_final)
