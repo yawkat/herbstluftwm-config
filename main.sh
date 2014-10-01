@@ -117,7 +117,7 @@ hc keybind $Mod-Pause spawn rhythmbox-client --play-pause
 hc keybind $Mod-Insert spawn rhythmbox-client --previous
 hc keybind $Mod-Delete spawn rhythmbox-client --next
 
-hc set default_frame_layout 3
+hc set default_frame_layout 2
 
 # unlock, just to be sure
 hc unlock
