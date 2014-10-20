@@ -59,6 +59,7 @@ class Panel():
         self.load = ""
         self.load_weighted = 0
         self.tag_string = ""
+        self.save_energy = False
 
     def launch(self):
         hc("pad", self.monitor, height)
@@ -108,7 +109,10 @@ class Panel():
             # if a task ran, we need to update the panel
             if update:
                 self.update()
-            time.sleep(1)
+            if self.save_energy:
+                time.sleep(3)
+            else:
+                time.sleep(1)
 
     # update the tag display (selected tag etc)
     def update_tags(self):
@@ -168,9 +172,16 @@ class Panel():
         # current window title
         val += self.window_title.replace("^", "^^")
 
+        save_energy_label = "^ca(1,herbstclient emit_hook save_energy_toggle)"
+        if self.save_energy:
+            save_energy_label += "^bg(#073642)^fg(#2aa198) S ^fg()^bg()"
+        else:
+            save_energy_label += " S "
+        save_energy_label += "^ca()"
+
         # date and such on the right
         right = separator + "^bg() "
-        right += (" " + separator + " ").join((self.date, self.load, self.traffic, self.battery))
+        right += (" " + separator + " ").join((self.date, self.load, self.traffic, save_energy_label, self.battery))
 
         # calculate right-aligned size
         right_no_format = format_re.sub("", right)
@@ -199,6 +210,9 @@ class Panel():
             self.update()
         elif t == "quit_panel" or t == "reload":
             sys.exit()
+        elif t == "save_energy_toggle":
+            self.save_energy = not self.save_energy
+            self.update()
 
 def text_width(text):
     return int(command("dzen2-textwidth", font, text.encode('ascii','ignore')))
