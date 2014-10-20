@@ -7,6 +7,7 @@ import time
 import daemon
 import gradient
 import time
+import json
 
 # parse a time string as used by upower -d
 def ptime(time_string):
@@ -39,10 +40,12 @@ class Device():
             state = u"+"
         else:
             state = u"?"
-        if self.finish_time is 0:
-            finish_time = ""
-        else:
-            finish_time = " " + str(self.finish_time) + "m"
+        finish_time = ""
+        if self.finish_time is not 0:
+            finish_time = " "
+            if self.finish_time >= 60:
+                finish_time += str(self.finish_time / 60) + "h"
+            finish_time += str(self.finish_time % 60) + "m"
         color = gradient.fraction_color(self.charge)
         return "^fg(#%s)%2.0f%%^fg()%s %s" % (color, self.charge * 100, finish_time, state.encode("utf-8"))
 
@@ -51,10 +54,20 @@ class Device():
         # if charge is 0 the device either defaults to 0 or doesn't report charge at all and thus isn't a battery device (usually)
         return self.charge > 0
 
+    @property
+    def data_map(self):
+        return {
+            "charge": self.charge,
+            "model": self.model,
+            "state": self.state,
+            "finish_time": self.finish_time
+        }
+
 class Power():
     def __init__(self):
         self.devices = []
         self.last_update = 0
+        self.log = open("log/power.log", "a")
 
     def update(self, lines):
         devices = []
@@ -80,6 +93,9 @@ class Power():
                 reading.finish_time = ptime(line[25:-1])
         if reading.valid:
             devices.append(reading)
+
+        self.log.write(json.dumps({ "time": time.time(), "devices": [d.data_map for d in devices] }) + "\n")
+        self.log.flush()
 
         self.devices = devices
 
