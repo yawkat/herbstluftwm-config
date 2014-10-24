@@ -6,6 +6,7 @@ import time
 
 import panel
 import upower
+import wallpaper
 
 from herbstclient import *
 from daemon import *
@@ -14,9 +15,8 @@ key_modifier = "Mod4"
 
 # loop that replaces the wallpaper every 5 mins
 def wallpaper_loop():
-    image_dir = os.path.join(os.path.dirname(__file__), "wallpapers", "images")
     while True:
-        os.system("feh --randomize --recursive --bg-fill " + image_dir)
+        wallpaper.update_wallpaper()
         time.sleep(300)
 singleton("wallpaper", wallpaper_loop)
 
