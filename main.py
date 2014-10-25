@@ -13,28 +13,35 @@ from daemon import *
 
 key_modifier = "Mod4"
 
-# loop that replaces the wallpaper every 5 mins
-def wallpaper_loop():
-    while True:
-        wallpaper.update_wallpaper()
-        time.sleep(300)
-singleton("wallpaper", wallpaper_loop)
+wallpaper.start()
 
 # loop that checks primary battery status every 30 secs and warns if it goes below 15%
 def battery_notify_loop():
-    sent = False
+    notify_steps = (.05, .15, .70)
+    notify_sent = [False for x in notify_steps]
     while True:
         upower.instance.update_upower(min_age=30)
         if len(upower.instance.devices) is not 0:
             device = upower.instance.devices[0]
             if device.valid:
-                log("State: %s  Charge: %s" % (device.state, device.charge))
-                if device.state is upower.STATE_NOT_CHARGING and device.charge < 0.15:
-                    if not sent:
-                        sent = True
-                        command("notify-send", "--urgency=critical", "--expire-time=20000", "Battery Low!", "Battery charge below 15%")
+                if device.state is upower.STATE_NOT_CHARGING:
+                    displayed = False
+                    for i in range(len(notify_steps)):
+                        if charge <= notify_steps[i] and not notify_sent[i]:
+                            notify_sent[i] = True
+                            if not displayed:
+                                displayed = True
+                                command(
+                                    "notify-send", 
+                                    "--urgency=critical", 
+                                    "--expire-time=20000", 
+                                    "Battery Low!", 
+                                    "Battery charge is %d%" % (device.charge * 100)
+                                )
+                        else:
+                            notify_sent[i] = False
                 else:
-                    sent = False
+                    notify_sent = [False for x in notify_steps]
         time.sleep(30)
 singleton("battery-warning", battery_notify_loop)
 
