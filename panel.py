@@ -10,6 +10,7 @@ import psutil
 import upower
 import gradient
 import nstat
+import wallpaper
 
 from herbstclient import *
 from daemon import *
@@ -17,11 +18,11 @@ from daemon import *
 background = "#002b36"
 foreground = "#93a1a1"
 height = 18
-font = "-*-fixed-medium-*-*-*-12-*-*-*-*-*-*-*"
+font = "-*-terminus-medium-*-*-*-12-*-*-*-*-*-*-*"
 
 ###
 
-separator="^bg()^fg(" + background + ")|^fg(" + foreground + ")"
+separator="^bg()^fg(" + foreground + ")"
 format_re = re.compile(r"\^[^(]*\([^)]*\)")
 
 # repeating task (update battery status etc)
@@ -93,6 +94,8 @@ class Panel():
         def tray():
             command("stalonetray", "-c", "stalonetrayrc", "--geometry", geom, "--max-geometry", geom_max)
         singleton("tray_" + self.monitor, tray, delay=1)
+
+        wallpaper.start((self.dimensions[0], self.dimensions[1], self.dimensions[2], self.dimensions[3]))
 
         # listen for events from 'herbstclient --idle' (panel switch, window events, etc)
         event_proc = hc_stream("--idle")
@@ -185,7 +188,7 @@ class Panel():
 
         # calculate right-aligned size
         right_no_format = format_re.sub("", right)
-        right_width = text_width(right_no_format + (" " * 8))
+        right_width = text_width(right_no_format + " ")
 
         # padding for right-aligned text
         val += "^pa(" + str(self.dimensions[2] - right_width) + ")"

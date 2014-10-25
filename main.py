@@ -13,8 +13,6 @@ from daemon import *
 
 key_modifier = "Mod4"
 
-wallpaper.start()
-
 # loop that checks primary battery status every 30 secs and warns if it goes below 15%
 def battery_notify_loop():
     notify_steps = (.05, .15, .70)
