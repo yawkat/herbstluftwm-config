@@ -77,9 +77,6 @@ def _decorate_wallpaper(fr, to, size, image_format):
     text_color = tuple(map(lambda x: int(x * 255), colorsys.hsv_to_rgb(*text_color_hsv)))
     box_color = tuple(map(lambda x: int(x * 255), colorsys.hsv_to_rgb(*box_color_hsv)))
 
-    daemon.log(str(text_color))
-    daemon.log(str(box_color))
-
     blend_a = img.crop(text_box).filter(ImageFilter.GaussianBlur(10))
     blend_b = Image.new("RGBA", (tw + _padding * 2, th + _padding * 2), box_color)
     daemon.log(str(blend_a.mode) + " " + str(blend_a.size))
