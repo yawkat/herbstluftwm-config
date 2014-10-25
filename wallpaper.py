@@ -18,7 +18,9 @@ _fifo_file = os.path.join(os.path.dirname(__file__), ".wallpaper_fifo");
 
 _diashow_time = 300
 
-font = None
+_padding = 2
+
+_font = None
 
 def _decorate_wallpaper(fr, to, size, image_format):
     f = os.path.basename(fr)
@@ -31,10 +33,10 @@ def _decorate_wallpaper(fr, to, size, image_format):
         open(to, "w").close() # touch with 0B
         return
 
-    global font
-    if font is None:
+    global _font
+    if _font is None:
         daemon.log("Loading font")
-        font = ImageFont.truetype("/usr/share/fonts/truetype/source-code-pro/SourceCodePro-Regular.ttf", 12)
+        _font = ImageFont.truetype("/usr/share/fonts/truetype/source-code-pro/SourceCodePro-Regular.ttf", 12)
 
     daemon.log("Decorating '%s'" % f)
 
@@ -56,10 +58,10 @@ def _decorate_wallpaper(fr, to, size, image_format):
     else:
         image_name = f[:ext_index]
 
-    tw, th = gfx.textsize(image_name, font=font)
+    tw, th = gfx.textsize(image_name, font=_font)
     th += 2
-    tx, ty = 4, height - th - 4
-    text_box = tx - 2, ty - 2, tx + tw + 2, ty + th + 2
+    tx, ty = _padding, height - th - _padding
+    text_box = tx - _padding, ty - _padding, tx + tw + _padding, ty + th + _padding
     text_bg_pixels = img.crop(text_box).getdata()
     text_bg_average = tuple(map(lambda col: int(sum(col) / len(col)), zip(*text_bg_pixels)))[:3]
     text_bg_average_hsv = colorsys.rgb_to_hsv(*map(lambda x: x / 255., text_bg_average))
@@ -70,7 +72,7 @@ def _decorate_wallpaper(fr, to, size, image_format):
         text_color_hsv[2] += 0.1
     text_color = tuple(map(lambda x: int(x * 255), colorsys.hsv_to_rgb(*text_color_hsv)))
     gfx.rectangle(text_box, fill=text_bg_average)
-    gfx.text((tx, ty - 1), image_name, fill=text_color, font=font)
+    gfx.text((tx, ty - 2), image_name, fill=text_color, font=_font)
     img.save(to, image_format)
 
 class _Daemon():
