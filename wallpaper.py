@@ -13,6 +13,7 @@ import colorsys
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
+from PIL import ImageFilter
 
 _fifo_file = os.path.join(os.path.dirname(__file__), ".wallpaper_fifo");
 
@@ -25,7 +26,7 @@ _font = None
 def _decorate_wallpaper(fr, to, size, image_format):
     f = os.path.basename(fr)
 
-    img = Image.open(fr)
+    img = Image.open(fr).convert(mode="RGBA")
     awidth, aheight = size
     width, height = img.size
     if awidth > width or aheight > height:
@@ -51,28 +52,44 @@ def _decorate_wallpaper(fr, to, size, image_format):
 
     width, height = img.size
 
-    gfx = ImageDraw.Draw(img)
     ext_index = f.rfind(".")
     if ext_index is -1:
         image_name = f
     else:
         image_name = f[:ext_index]
 
-    tw, th = gfx.textsize(image_name, font=_font)
+    tw, th = ImageDraw.Draw(img).textsize(image_name, font=_font)
     th += 2
     tx, ty = _padding, height - th - _padding
     text_box = tx - _padding, ty - _padding, tx + tw + _padding, ty + th + _padding
-    text_bg_pixels = img.crop(text_box).getdata()
-    text_bg_average = tuple(map(lambda col: int(sum(col) / len(col)), zip(*text_bg_pixels)))[:3]
-    text_bg_average_hsv = colorsys.rgb_to_hsv(*map(lambda x: x / 255., text_bg_average))
-    text_color_hsv = list(text_bg_average_hsv)
+
+    background_pixels = img.crop(text_box).getdata()
+    background_average = tuple(map(lambda col: int(sum(col) / len(col)), zip(*background_pixels)))[:3]
+    background_average_hsv = colorsys.rgb_to_hsv(*map(lambda x: x / 255., background_average))
+    text_color_hsv = list(background_average_hsv)
+    box_color_hsv = list(background_average_hsv)
     if text_color_hsv[2] > 0.5:
         text_color_hsv[2] -= 0.1
+        box_color_hsv[2] += 0.1
     else:
         text_color_hsv[2] += 0.1
+        box_color_hsv[2] -= 0.1
     text_color = tuple(map(lambda x: int(x * 255), colorsys.hsv_to_rgb(*text_color_hsv)))
-    gfx.rectangle(text_box, fill=text_bg_average)
-    gfx.text((tx, ty - 2), image_name, fill=text_color, font=_font)
+    box_color = tuple(map(lambda x: int(x * 255), colorsys.hsv_to_rgb(*box_color_hsv)))
+
+    daemon.log(str(text_color))
+    daemon.log(str(box_color))
+
+    blend_a = img.crop(text_box).filter(ImageFilter.GaussianBlur(10))
+    blend_b = Image.new("RGBA", (tw + _padding * 2, th + _padding * 2), box_color)
+    daemon.log(str(blend_a.mode) + " " + str(blend_a.size))
+    daemon.log(str(blend_b.mode) + " " + str(blend_b.size))
+    blended = Image.blend(blend_a, blend_b, 0.8)
+    blended.load()
+    img.paste(blended, box=text_box)
+    
+    ImageDraw.Draw(img).text((tx, ty - 2), image_name, fill=text_color, font=_font)
+
     img.save(to, image_format)
 
 class _Daemon():
