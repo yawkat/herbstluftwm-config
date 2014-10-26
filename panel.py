@@ -19,11 +19,12 @@ background = "#002b36"
 foreground = "#93a1a1"
 height = 18
 font = "-*-terminus-medium-*-*-*-12-*-*-*-*-*-*-*"
+tray_width = 3 * 16
 
 ###
 
-separator="^bg()^fg(" + foreground + ")"
 format_re = re.compile(r"\^[^(]*\([^)]*\)")
+reset = "^bg()^fg()"
 
 # repeating task (update battery status etc)
 class Task():
@@ -61,6 +62,7 @@ class Panel():
         self.load_weighted = 0
         self.tag_string = ""
         self.save_energy = False
+        self.right_width = 0
 
     def launch(self):
         hc("pad", self.monitor, height)
@@ -84,16 +86,9 @@ class Panel():
         run_thread("tasks_" + self.monitor, self.run_tasks)
 
         self.update()
+        self.launch_tray()
 
         bind(("Mod4", "plus"), ("spawn", os.path.join(os.path.dirname(__file__), "run", "toggle.sh"), str(self.dimensions[2])))
-
-        tray_position = self.dimensions[2] - 550
-        geom = "1x1+%s+1" % tray_position
-        geom_max = "1x1+%s+1" % tray_position
-        # system tray
-        def tray():
-            command("stalonetray", "-c", "stalonetrayrc", "--geometry", geom, "--max-geometry", geom_max)
-        singleton("tray_" + self.monitor, tray, delay=1)
 
         wallpaper.start((self.dimensions[0], self.dimensions[1], self.dimensions[2], self.dimensions[3]))
 
@@ -103,6 +98,16 @@ class Panel():
         while True:
             event = event_proc.readline()
             self.hc_event(event[:-1])
+
+    def launch_tray(self):
+        tray_position = self.dimensions[2] - tray_width
+        geom = "1x1+%s+1" % tray_position
+        geom_max = "1x1+%s+1" % tray_position
+        log("Tray position: %s" % geom)
+        # system tray
+        def tray():
+            command("stalonetray", "-c", "stalonetrayrc", "--geometry", geom, "--max-geometry", geom_max)
+        singleton("tray_" + self.monitor, tray, delay=1)
 
     def run_tasks(self):
         while True:
@@ -142,16 +147,16 @@ class Panel():
     # update the battery display
     def update_battery(self):
         upower.instance.update_upower(min_age=20)
-        self.battery = " | ".join(map(upower.Device.format_panel, upower.instance.devices))
+        self.battery = "^bg()" + " | ".join(map(upower.Device.format_panel, upower.instance.devices))
 
     # update the network traffic display
     def update_traffic(self):
         nstat.update()
-        self.traffic = "^fg(#cb4b16)%s ^fg(#b58900)%s" % (nstat.human_readable(nstat.down), nstat.human_readable(nstat.up))
+        self.traffic = " ^fg(#cb4b16)%s ^fg(#b58900)%s" % (nstat.human_readable(nstat.down), nstat.human_readable(nstat.up))
 
     # update the timestamp
     def update_date(self):
-        self.date = time.strftime("%Y-%m-%d, %H:%M:%S")
+        self.date = time.strftime("%Y-%m-%d, %H:%M:%S ")
 
     # update the cpu/ram/swap display
     def update_load(self):
@@ -164,34 +169,34 @@ class Panel():
         swap = psutil.swap_memory().percent
         self.load_weighted = self.load_weighted * 0.8 + cpu * 0.2
 
-        self.load = perc(self.load_weighted, "C") + " " + perc(mem, "M") + " " + perc(swap, "S") + "^fg()"
+        self.load = " " + " ".join((perc(self.load_weighted, "C"), perc(mem, "M"), perc(swap, "S")))
 
     # rebuild the panel string and display it
     def update(self):
         # tags first
         val = ""
         val += self.tag_string
-        val += separator + " "
+        val += " " + reset
         # current window title
         val += self.window_title.replace("^", "^^")
 
         save_energy_label = "^ca(1,herbstclient emit_hook save_energy_toggle)"
         if self.save_energy:
-            save_energy_label += "^bg(#073642)^fg(#2aa198) S ^fg()^bg()"
+            save_energy_label += "^bg(#073642)^fg(#2aa198) S "
         else:
-            save_energy_label += " S "
+            save_energy_label += reset + " S "
         save_energy_label += "^ca()"
 
         # date and such on the right
-        right = separator + "^bg() "
-        right += (" " + separator + " ").join((self.date, self.load, self.traffic, save_energy_label, self.battery))
+        right = reset
+        right += "".join((self.date, self.load, self.traffic, save_energy_label, self.battery))
 
         # calculate right-aligned size
         right_no_format = format_re.sub("", right)
         right_width = text_width(right_no_format + " ")
 
         # padding for right-aligned text
-        val += "^pa(" + str(self.dimensions[2] - right_width) + ")"
+        val += "^pa(" + str(self.dimensions[2] - right_width - tray_width) + ")"
         val += right
 
         # newline to finish command for dzen2

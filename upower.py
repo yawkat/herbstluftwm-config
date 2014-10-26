@@ -42,12 +42,12 @@ class Device():
             state = u"?"
         finish_time = ""
         if self.finish_time is not 0:
-            finish_time = " "
+            finish_time = ""
             if self.finish_time >= 60:
                 finish_time += str(self.finish_time / 60) + "h"
             finish_time += str(self.finish_time % 60) + "m"
         color = gradient.fraction_color(self.charge)
-        return "^fg(#%s)%2.0f%%^fg()%s %s" % (color, self.charge * 100, finish_time, state.encode("utf-8"))
+        return "^fg(#%s)%2.0f%%^fg() %s%s" % (color, self.charge * 100, finish_time, state.encode("utf-8"))
 
     @property
     def valid(self):
