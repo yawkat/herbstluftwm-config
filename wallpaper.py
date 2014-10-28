@@ -69,21 +69,18 @@ def _decorate_wallpaper(fr, to, size, image_format):
     text_color_hsv = list(background_average_hsv)
     box_color_hsv = list(background_average_hsv)
     if text_color_hsv[2] > 0.5:
-        text_color_hsv[2] -= 0.1
-        box_color_hsv[2] += 0.1
-    else:
         text_color_hsv[2] += 0.1
-        box_color_hsv[2] -= 0.1
+        box_color_hsv[2] -= 0.5
+    else:
+        text_color_hsv[2] -= 0.1
+        box_color_hsv[2] += 0.5
     text_color = tuple(map(lambda x: int(x * 255), colorsys.hsv_to_rgb(*text_color_hsv)))
     box_color = tuple(map(lambda x: int(x * 255), colorsys.hsv_to_rgb(*box_color_hsv)))
 
-    blend_a = img.crop(text_box).filter(ImageFilter.GaussianBlur(10))
-    blend_b = Image.new("RGBA", (tw + _padding * 2, th + _padding * 2), box_color)
-    daemon.log(str(blend_a.mode) + " " + str(blend_a.size))
-    daemon.log(str(blend_b.mode) + " " + str(blend_b.size))
-    blended = Image.blend(blend_a, blend_b, 0.8)
-    blended.load()
-    img.paste(blended, box=text_box)
+    text_blurred = img.crop(text_box)
+    ImageDraw.Draw(text_blurred).text((2, 0), image_name, fill=box_color, font=_font)
+    text_blurred = text_blurred.filter(ImageFilter.GaussianBlur(5))
+    img.paste(text_blurred, box=text_box)
     
     ImageDraw.Draw(img).text((tx, ty - 2), image_name, fill=text_color, font=_font)
 
