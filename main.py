@@ -25,17 +25,17 @@ def battery_notify_loop():
                 if device.state is upower.STATE_NOT_CHARGING:
                     displayed = False
                     for i in range(len(notify_steps)):
-                        if charge <= notify_steps[i] and not notify_sent[i]:
-                            notify_sent[i] = True
-                            if not displayed:
-                                displayed = True
-                                command(
-                                    "notify-send", 
-                                    "--urgency=critical", 
-                                    "--expire-time=20000", 
-                                    "Battery Low!", 
-                                    "Battery charge is %d%" % (device.charge * 100)
-                                )
+                        if device.charge <= notify_steps[i]:
+                            if not notify_sent[i]:
+                                notify_sent[i] = True
+                                if not displayed:
+                                    displayed = True
+                                    command(
+                                        "notify-send", 
+                                        "--urgency=critical", 
+                                        "Battery Low!", 
+                                        "Battery charge is %d%%" % (device.charge * 100)
+                                    )
                         else:
                             notify_sent[i] = False
                 else:
