@@ -94,7 +94,7 @@ class Panel():
 
         # listen for events from 'herbstclient --idle' (panel switch, window events, etc)
         event_proc = hc_stream("--idle")
-        log("Waiting for events ")
+        logger.debug("Waiting for events ")
         while True:
             event = event_proc.readline()
             self.hc_event(event[:-1])
@@ -103,7 +103,7 @@ class Panel():
         tray_position = self.dimensions[2] - tray_width
         geom = "1x1+%s+1" % tray_position
         geom_max = "1x1+%s+1" % tray_position
-        log("Tray position: %s" % geom)
+        logger.debug("Tray position: %s" % geom)
         # system tray
         def tray():
             command("stalonetray", "-c", "stalonetrayrc", "--geometry", geom, "--max-geometry", geom_max)
@@ -126,7 +126,7 @@ class Panel():
     def update_tags(self):
         val = ""
         tags = hc("tag_status").strip().split("\t")
-        log("Tags: " + str(tags))
+        logger.debug("Tags: " + str(tags))
         for tag in tags:
             name = tag[1:]
             code = tag[0]
@@ -205,7 +205,7 @@ class Panel():
 
     # called when a herbstclient event occurs
     def hc_event(self, event):
-        log("Event: " + event)
+        logger.debug("Event: " + event)
         if "\t" in event:
             t = event[:event.index("\t")]
         else:

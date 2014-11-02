@@ -4,6 +4,7 @@ import os
 import random
 import sys
 import daemon
+from daemon import logger
 import subprocess
 import threading
 import time
@@ -30,16 +31,16 @@ def _decorate_wallpaper(fr, to, size, image_format):
     awidth, aheight = size
     width, height = img.size
     if awidth > width or aheight > height:
-        daemon.log("'%s' is too small" % f)
+        logger.info("'%s' is too small" % f)
         open(to, "w").close() # touch with 0B
         return
 
     global _font
     if _font is None:
-        daemon.log("Loading font")
+        logger.info("Loading font")
         _font = ImageFont.truetype("/usr/share/fonts/truetype/source-code-pro/SourceCodePro-Regular.ttf", 12)
 
-    daemon.log("Decorating '%s'" % f)
+    logger.info("Decorating '%s'" % f)
 
     scale_factor = max(float(awidth) / width, float(aheight) / height)
     img.thumbnail((int(width * scale_factor), int(height * scale_factor)), Image.ANTIALIAS)
@@ -126,7 +127,7 @@ class _Daemon():
                     try:
                         self.change_wallpaper(int(delta))
                     except ValueError:
-                        daemon.log("Invalid delta %s" % delta)
+                        logger.error("Invalid delta %s" % delta)
 
     def change_wallpaper(self, step):
         self.last_update = time.time()
@@ -142,7 +143,7 @@ class _Daemon():
                 i -= math.copysign(1, step)
         dimensions_str = "%sx%s+%s+%s" % (self.dimensions[2], self.dimensions[3], self.dimensions[0], self.dimensions[1])
         subprocess.Popen(("feh", "--bg-center", "-g", dimensions_str, path), stdout=1, stderr=2)
-        daemon.log("Changed wallpaper by %s to %s" % (step, path))
+        logger.info("Changed wallpaper by %s to %s" % (step, path))
 
 def start(dimensions):
     x, y, w, h = dimensions

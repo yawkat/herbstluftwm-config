@@ -2,6 +2,8 @@
 
 # multithreading utils
 
+from __future__ import print_function
+
 import os
 from os import path
 import threading
@@ -11,6 +13,8 @@ import traceback
 import time
 import subprocess
 import setproctitle
+import multiprocessing
+import logging
 
 source_dir = path.dirname(__file__)
 
@@ -20,7 +24,7 @@ _children = []
 def _kill_children(sign):
     for child in _children:
         try:
-            log("Sending %s to %s" % (sign, child))
+            logger.debug("Sending %s to %s" % (sign, child))
             os.kill(child, sign)
         except:
             traceback.print_exc()
@@ -37,7 +41,7 @@ signal.signal(signal.SIGTERM, term)
 # run a command and return a stream of its stdout (pipe)
 def command_stream(*components):
     components = map(lambda c: str(c), components)
-    log("Executing " + str(components))
+    logger.debug("Executing " + str(components))
     proc = subprocess.Popen(components, stdout=subprocess.PIPE)
     _children.append(proc.pid)
     return proc.stdout
@@ -49,23 +53,16 @@ def command(*components):
 # fork-run the given function after <delay> seconds
 # name is used for log files
 def run_fork(name, function, delay=0):
-    child_pid = os.fork()
-    if child_pid is 0:
-        log_dir = path.join(source_dir, "log")
-        flags = os.O_CREAT | os.O_WRONLY | os.O_TRUNC
-        f = name # + "_" + str(os.getpid())
-        os.dup2(os.open(path.join(log_dir, f + ".out"), flags), 1)
-        os.dup2(os.open(path.join(log_dir, f + ".err"), flags), 2)
-        log("Output redirected")
+    logger.info("Launching %s" % name)
+    def run():
+        global logger
+        logger = _create_logger(name)
+        time.sleep(delay)
         setproctitle.setproctitle(setproctitle.getproctitle() + " > " + name)
-        try:
-            time.sleep(delay)
-            function()
-        except:
-            traceback.print_exc()
-        sys.exit(0)
-    _children.append(child_pid)
-    return child_pid
+        function()
+    proc = multiprocessing.Process(target=run)
+    proc.start()
+    return proc.pid
 
 # run a daemon thread with the given name and target function
 def run_thread(name, function, daemon=True):
@@ -95,9 +92,15 @@ def singleton(name, function, delay=0):
 def command_singleton(name, command_components, delay=0):
     singleton(name, lambda: command(*command_components), delay=delay)
 
-# log a message, print replacement that works with forked instances
-def log(msg, err=False):
-    chan = 1
-    if err:
-        chan = 2
-    os.write(chan, msg + "\n")
+def _create_logger(name):
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.DEBUG)
+    formatter = logging.Formatter("%(asctime)s [%(levelname)8s] %(message)s")
+    handler = logging.FileHandler("log/" + name)
+    handler.setLevel(logging.DEBUG)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.info("Logger '%s' created", name)
+    return logger
+
+logger = _create_logger("main")
