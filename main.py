@@ -15,7 +15,7 @@ key_modifier = "Mod4"
 
 # loop that checks primary battery status every 30 secs and warns if it goes below 15%
 def battery_notify_loop():
-    notify_steps = (.05, .15, .70)
+    notify_steps = (.05, .15)
     notify_sent = [False for x in notify_steps]
     while True:
         upower.instance.update_upower(min_age=30)
