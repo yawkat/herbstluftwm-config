@@ -27,7 +27,7 @@ def _kill_children(sign):
             logger.debug("Sending %s to %s" % (sign, child))
             os.kill(child, sign)
         except:
-            traceback.print_exc()
+            logger.exception("Failed to send signal", exc_info=True)
 
 # run on exit, kill all children
 def term(*args):
@@ -57,9 +57,12 @@ def run_fork(name, function, delay=0):
     def run():
         global logger
         logger = _create_logger(name)
-        time.sleep(delay)
-        setproctitle.setproctitle(setproctitle.getproctitle() + " > " + name)
-        function()
+        try:
+            time.sleep(delay)
+            setproctitle.setproctitle(setproctitle.getproctitle() + " > " + name)
+            function()
+        except:
+            logger.exception("Error in process execution", exc_info=True)
     proc = multiprocessing.Process(target=run)
     proc.start()
     return proc.pid
