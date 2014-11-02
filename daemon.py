@@ -99,11 +99,26 @@ def _create_logger(name):
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter("%(asctime)s [%(levelname)8s] %(message)s")
-    handler = logging.FileHandler("log/" + name)
+    log_file = "log/" + name
+    _rotate_logs(log_file)
+    handler = logging.FileHandler(log_file)
     handler.setLevel(logging.DEBUG)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     logger.info("Logger '%s' created", name)
     return logger
+
+def _rotate_logs(base_file, index=0):
+    if index == 0:
+        name = base_file
+    else:
+        name = base_file + "." + str(index)
+    if os.path.exists(name):
+        if index >= 2:
+            os.remove(name)
+        else:
+            next_name = _rotate_logs(base_file, index + 1)
+            os.rename(name, next_name)
+    return name
 
 logger = _create_logger("main")
