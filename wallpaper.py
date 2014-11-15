@@ -42,6 +42,7 @@ def _decorate_wallpaper(fr, to, size, image_format):
 
     logger.info("Decorating '%s'" % f)
 
+    # scale to size
     scale_factor = max(float(awidth) / width, float(aheight) / height)
     img.thumbnail((int(width * scale_factor), int(height * scale_factor)), Image.ANTIALIAS)
 
@@ -53,36 +54,46 @@ def _decorate_wallpaper(fr, to, size, image_format):
 
     width, height = img.size
 
+    # read image name (file name - extension)
     ext_index = f.rfind(".")
     if ext_index is -1:
         image_name = f
     else:
         image_name = f[:ext_index]
 
+    # prepare image drawing
     tw, th = ImageDraw.Draw(img).textsize(image_name, font=_font)
     th += 2
     tx, ty = _padding, height - th - _padding
     text_box = tx - _padding, ty - _padding, tx + tw + _padding, ty + th + _padding
 
     background_pixels = img.crop(text_box).getdata()
+    # average image color for text theme
     background_average = tuple(map(lambda col: int(sum(col) / len(col)), zip(*background_pixels)))[:3]
     background_average_hsv = colorsys.rgb_to_hsv(*map(lambda x: x / 255., background_average))
     text_color_hsv = list(background_average_hsv)
     box_color_hsv = list(background_average_hsv)
+    logger.info(str(text_color_hsv))
+    # change values (brightness) of the colors so they become easier to see
     if text_color_hsv[2] > 0.5:
-        text_color_hsv[2] += 0.1
-        box_color_hsv[2] -= 0.5
+        text_color_hsv[2] -= 0.2
+        box_color_hsv[2] += 1
     else:
-        text_color_hsv[2] -= 0.1
-        box_color_hsv[2] += 0.5
+        text_color_hsv[2] += 0.2
+        box_color_hsv[2] = 0
     text_color = tuple(map(lambda x: int(x * 255), colorsys.hsv_to_rgb(*text_color_hsv)))
     box_color = tuple(map(lambda x: int(x * 255), colorsys.hsv_to_rgb(*box_color_hsv)))
 
+    # draw and blur text for text shadow
     text_blurred = img.crop(text_box)
-    ImageDraw.Draw(text_blurred).text((2, 0), image_name, fill=box_color, font=_font)
-    text_blurred = text_blurred.filter(ImageFilter.GaussianBlur(5))
+    # draw 5 times with diofferent offsets so we get a wider shadow
+    for off in ((0, 0), (-1, 0), (1, 0), (0, 1), (0, -1)):
+        ImageDraw.Draw(text_blurred).text((2 + off[0], off[1]), image_name, fill=box_color, font=_font)
+    # blur shadow
+    text_blurred = text_blurred.filter(ImageFilter.GaussianBlur(7))
     img.paste(text_blurred, box=text_box)
     
+    # add normal text on top
     ImageDraw.Draw(img).text((tx, ty - 2), image_name, fill=text_color, font=_font)
 
     img.save(to, image_format)
