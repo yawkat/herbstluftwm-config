@@ -121,4 +121,9 @@ def _rotate_logs(base_file, index=0):
             os.rename(name, next_name)
     return name
 
-logger = _create_logger("main")
+logger = None
+def init_logger():
+    global logger
+    if logger is None:
+        logger = _create_logger("main")
+
