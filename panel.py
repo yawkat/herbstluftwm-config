@@ -88,7 +88,10 @@ class Panel():
         self.update()
         self.launch_tray()
 
-        bind(("Mod4", "plus"), ("spawn", os.path.join(os.path.dirname(__file__), "run", "toggle.sh"), str(self.dimensions[2])))
+        def bind_overlay(key, path):
+            bind(("Mod4", key), ("spawn", os.path.join(os.path.dirname(__file__), path), str(self.dimensions[2])))
+        bind_overlay("plus", "run/toggle.sh")
+        bind_overlay("acute", "password/ui.py")
 
         wallpaper.start((self.dimensions[0], self.dimensions[1], self.dimensions[2], self.dimensions[3]))
 
@@ -100,9 +103,9 @@ class Panel():
             self.hc_event(event[:-1])
 
     def launch_tray(self):
-        tray_position = self.dimensions[2] - tray_width
+        tray_position = self.dimensions[2] - 16
         geom = "1x1+%s+1" % tray_position
-        geom_max = "1x1+%s+1" % tray_position
+        geom_max = "3x1+%s+1" % tray_position
         logger.debug("Tray position: %s" % geom)
         # system tray
         def tray():

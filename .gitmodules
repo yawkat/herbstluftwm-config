@@ -7,3 +7,6 @@
 [submodule "screenshot"]
 	path = screenshot
 	url = git@github.com:yawkat/screenshot-python.git
+[submodule "password"]
+	path = password
+	url = git@github.com:yawkat/password.git
