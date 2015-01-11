@@ -18,7 +18,9 @@ from daemon import *
 background = "#002b36"
 foreground = "#93a1a1"
 height = 18
-font = "-*-terminus-medium-*-*-*-12-*-*-*-*-*-*-*"
+font_size = 9
+font = "Source Code Pro:size=%s" % font_size
+font_aspect_ratio = 0.75
 tray_width = 3 * 16
 
 ###
@@ -91,7 +93,7 @@ class Panel():
         def bind_overlay(key, path):
             bind(("Mod4", key), ("spawn", os.path.join(os.path.dirname(__file__), path), str(self.dimensions[2])))
         bind_overlay("plus", "run/toggle.sh")
-        bind_overlay("acute", "password/ui.py")
+        bind_overlay("BackSpace", "password/ui.py")
 
         wallpaper.start((self.dimensions[0], self.dimensions[1], self.dimensions[2], self.dimensions[3]))
 
@@ -226,7 +228,8 @@ class Panel():
             self.update()
 
 def text_width(text):
-    return int(command("dzen2-textwidth", font, text.encode('ascii','ignore')))
+    char_count = len(text.encode('ascii','ignore'))
+    return font_aspect_ratio * font_size * char_count
 
 def launch(monitor):
     singleton("panel_" + monitor, lambda: _do_launch(monitor))

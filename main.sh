@@ -16,7 +16,7 @@ Mod=Mod4   # Use the super key as the main modifier
 
 hc keybind $Mod-Shift-r reload
 hc keybind Mod1-F4 close
-hc keybind $Mod-Return spawn xfce4-terminal
+hc keybind $Mod-Return spawn gnome-terminal
 
 # basic movement
 # focusing clients
@@ -112,12 +112,13 @@ hc rule --class=Quasselclient --tag=4
 hc rule --class=Steam --tag=9
 hc rule --class=Thunderbird --tag=0
 hc rule --class=Rhythmbox --tag=0
+hc rule --class=Sublime_text --tag=2
 
 hc keybind $Mod-numbersign spawn $(readlink -f $(dirname $0))/screenshot/screenshot.py screen
 hc keybind $Mod-Shift-numbersign spawn $(readlink -f $(dirname $0))/screenshot/screenshot.py clipboard
-echo $(readlink -f $(dirname $0))/wallpaper.py" +1"
 hc keybind $Mod-Shift-e spawn $(readlink -f $(dirname $0))/wallpaper.py +1
 hc keybind $Mod-Shift-w spawn $(readlink -f $(dirname $0))/wallpaper.py -1
+hc keybind $Mod-Shift-s spawn $(readlink -f $(dirname $0))/wallpaper.py toggle_safe
 hc keybind $Mod-Pause spawn rhythmbox-client --play-pause
 hc keybind $Mod-Insert spawn rhythmbox-client --previous
 hc keybind $Mod-Delete spawn rhythmbox-client --next
