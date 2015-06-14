@@ -10,7 +10,6 @@ import psutil
 import upower
 import gradient
 import nstat
-import wallpaper
 
 from herbstclient import *
 from daemon import *
@@ -94,8 +93,6 @@ class Panel():
             bind(("Mod4", key), ("spawn", os.path.join(os.path.dirname(__file__), path), str(self.dimensions[2])))
         bind_overlay("plus", "run/toggle.sh")
         bind_overlay("BackSpace", "password/ui.py")
-
-        wallpaper.start((self.dimensions[0], self.dimensions[1], self.dimensions[2], self.dimensions[3]))
 
         # listen for events from 'herbstclient --idle' (panel switch, window events, etc)
         event_proc = hc_stream("--idle")

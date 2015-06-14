@@ -44,10 +44,6 @@ hc keybind $Mod-Control-Down    resize down +0.05
 hc keybind $Mod-Control-Up      resize up +0.05
 hc keybind $Mod-Control-Right   resize right +0.05
 
-# cycle through tags
-hc keybind $Mod-period use_index +1 --skip-visible
-hc keybind $Mod-comma  use_index -1 --skip-visible
-
 # layouting
 hc keybind $Mod-r remove
 hc keybind $Mod-space cycle_layout 1
@@ -119,9 +115,12 @@ hc keybind $Mod-Shift-numbersign spawn $(readlink -f $(dirname $0))/screenshot/s
 hc keybind $Mod-Shift-e spawn $(readlink -f $(dirname $0))/wallpaper.py +1
 hc keybind $Mod-Shift-w spawn $(readlink -f $(dirname $0))/wallpaper.py -1
 hc keybind $Mod-Shift-s spawn $(readlink -f $(dirname $0))/wallpaper.py toggle_safe
-hc keybind $Mod-Pause spawn rhythmbox-client --play-pause
-hc keybind $Mod-Insert spawn rhythmbox-client --previous
-hc keybind $Mod-Delete spawn rhythmbox-client --next
+db="dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2"
+hc keybind $Mod-Pause spawn $db org.mpris.MediaPlayer2.Player.PlayPause
+hc keybind $Mod-Insert spawn $db org.mpris.MediaPlayer2.Player.Previous
+hc keybind $Mod-Delete spawn $db org.mpris.MediaPlayer2.Player.Next
+hc keybind $Mod-period spawn xbacklight +10
+hc keybind $Mod-comma spawn xbacklight -10
 
 hc set default_frame_layout 2
 

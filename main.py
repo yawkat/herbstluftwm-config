@@ -67,6 +67,15 @@ for tag in tags:
     i += 1
 
 # make panels
+command_singleton("panel", ("java", "-Xmx100M", "-XX:+PrintGC", "-XX:+PrintGCDateStamps", "-XX:+UseSerialGC", "-jar", "wm.jar"))
+def bind_overlay(key, path):
+    bind(("Mod4", key), ("spawn", os.path.join(os.path.dirname(__file__), path), str(1366)))
+#bind_overlay("plus", "run/toggle.sh")
+bind_overlay("BackSpace", "password/ui.py")
+screens = []
 for monitor in hc_stream("list_monitors"):
-    print "Preparing monitor " + monitor
-    panel.launch(monitor[:monitor.index(":")])
+#    print "Preparing monitor " + monitor
+#    panel.launch(monitor[:monitor.index(":")])
+    screens.append(map(int, hc("monitor_rect", monitor).strip().split(" ")))
+
+wallpaper.start(screens)

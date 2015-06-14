@@ -8,6 +8,7 @@ from daemon import logger
 import subprocess
 import threading
 import time
+import datetime
 import math
 import colorsys
 
@@ -23,6 +24,16 @@ _diashow_time = 300
 _padding = 2
 
 _font = None
+
+days_remaining_map = []
+
+walked = 0
+for i in range(3 * 4 * 7):
+    days_remaining_map.append(walked)
+    if i % 7 not in (5, 6) and i != 30 and i != 44 and i != 60:
+        walked += 1
+days_remaining_map = [walked - i for i in days_remaining_map]
+days_remaining_map[0:0] = [0 for x in range(5)]
 
 def _decorate_wallpaper(fr, to, size, image_format):
     f = os.path.basename(fr)
@@ -109,6 +120,7 @@ class _Daemon():
         files = os.listdir(image_dir)
         self.wallpapers = [(os.path.join(self.sized_image_dir, name), os.path.join(image_dir, name)) for name in files]
         random.shuffle(self.wallpapers)
+        self.safe_mode = False
 
     def start(self):
         if not os.path.exists(_fifo_file):
@@ -121,8 +133,6 @@ class _Daemon():
         loop.daemon = True
         loop.start()
 
-        self.manual_update_wallpaper()
-
     def loop_wallpaper(self):
         while True:
             remaining = _diashow_time + self.last_update - time.time()
@@ -131,16 +141,9 @@ class _Daemon():
                 remaining = _diashow_time
             time.sleep(remaining)
 
-    def manual_update_wallpaper(self):
-        while True:
-            with open(_fifo_file, "r") as f:
-                for delta in f:
-                    try:
-                        self.change_wallpaper(int(delta))
-                    except ValueError:
-                        logger.error("Invalid delta %s" % delta)
-
     def change_wallpaper(self, step):
+        if self.safe_mode:
+            return
         self.last_update = time.time()
         i = 0
         while i != step:
@@ -152,13 +155,58 @@ class _Daemon():
             if os.stat(path).st_size == 0:
                 self.wallpapers.pop(self.current_index)
                 i -= math.copysign(1, step)
-        dimensions_str = "%sx%s+%s+%s" % (self.dimensions[2], self.dimensions[3], self.dimensions[0], self.dimensions[1])
-        subprocess.Popen(("feh", "--bg-center", "-g", dimensions_str, path), stdout=1, stderr=2)
+        self.show_wallpaper(path)
         logger.info("Changed wallpaper by %s to %s" % (step, path))
 
+    def show_safe_wallpaper(self):
+        today = datetime.date.today().timetuple().tm_yday
+        today_days_remaining = days_remaining_map[today]
+        with open("safe_wallpaper.svg") as f:
+            svg = f.read()
+        svg = svg.replace("####", str(today_days_remaining))
+        cache_dir = os.path.join(".cache", "safe_wallpaper", str(today))
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir)
+            with open(os.path.join(cache_dir, "wp.svg"), "w") as f:
+                f.write(svg)
+            subprocess.Popen(("inkscape", "-z", "-e", os.path.join(cache_dir, "wp.png"), os.path.join(cache_dir, "wp.svg")), stdout=1, stderr=2).wait()
+        self.show_wallpaper(os.path.join(cache_dir, "wp.png"))
+
+    def show_wallpaper(self, path):
+        dimensions_str = "%sx%s+%s+%s" % (self.dimensions[2], self.dimensions[3], self.dimensions[0], self.dimensions[1])
+        logger.info("show " + dimensions_str)
+        subprocess.Popen(("feh", "--bg-center", "--no-fehbg", "-g", dimensions_str, path), stdout=1, stderr=2)
+
 def start(dimensions):
-    x, y, w, h = dimensions
-    daemon.singleton("wallpaper_%sx%s+%s+%s" % (w, h, x, y), lambda: _Daemon(dimensions).start())
+    logger.info("Start %s" % (dimensions,))
+    def do_start():
+        screens = []
+        for dim in dimensions:
+            x, y, w, h = dim
+            dae = _Daemon(dim)
+            dae.start()
+            screens.append(dae)
+        logger.info("Daemons: %s" % screens)
+        while True:
+            with open(_fifo_file, "r") as f:
+                for delta in f:
+                    delta = delta[:-1]
+                    print("Got command %s" % delta)
+                    if delta == "toggle_safe":
+                        for screen in screens:
+                            screen.safe_mode = not screen.safe_mode
+                            if screen.safe_mode:
+                                screen.show_safe_wallpaper()
+                            else:
+                                screen.change_wallpaper(1)
+                        continue
+                    try:
+                        for screen in screens:
+                            screen.change_wallpaper(int(delta))
+                    except ValueError:
+                        logger.error("Invalid delta %s" % delta)
+
+    daemon.singleton("wallpaper", do_start)
 
 if __name__ == '__main__':
     fd = os.open(_fifo_file, os.O_WRONLY | os.O_NONBLOCK)
