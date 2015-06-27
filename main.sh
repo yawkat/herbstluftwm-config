@@ -110,15 +110,19 @@ hc rule --class=Thunderbird --tag=0
 hc rule --class=Rhythmbox --tag=0
 hc rule --class=Sublime_text --tag=2
 
-hc keybind $Mod-numbersign spawn $(readlink -f $(dirname $0))/screenshot/screenshot.py screen
-hc keybind $Mod-Shift-numbersign spawn $(readlink -f $(dirname $0))/screenshot/screenshot.py clipboard
-hc keybind $Mod-Shift-e spawn $(readlink -f $(dirname $0))/wallpaper.py +1
-hc keybind $Mod-Shift-w spawn $(readlink -f $(dirname $0))/wallpaper.py -1
-hc keybind $Mod-Shift-s spawn $(readlink -f $(dirname $0))/wallpaper.py toggle_safe
 db="dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2"
 hc keybind $Mod-Pause spawn $db org.mpris.MediaPlayer2.Player.PlayPause
 hc keybind $Mod-Insert spawn $db org.mpris.MediaPlayer2.Player.Previous
 hc keybind $Mod-Delete spawn $db org.mpris.MediaPlayer2.Player.Next
+
+hc keybind XF86AudioPlay spawn $db org.mpris.MediaPlayer2.Player.PlayPause
+hc keybind XF86AudioStop spawn $db org.mpris.MediaPlayer2.Player.Stop
+hc keybind XF86AudioPrev spawn $db org.mpris.MediaPlayer2.Player.Previous
+hc keybind XF86AudioNext spawn $db org.mpris.MediaPlayer2.Player.Next
+
+hc keybind XF86Launch8 spawn setxkbmap de nodeadkeys
+hc keybind XF86Launch9 spawn setxkbmap us
+
 hc keybind $Mod-period spawn xbacklight +10
 hc keybind $Mod-comma spawn xbacklight -10
 
@@ -128,3 +132,4 @@ hc set default_frame_layout 2
 hc unlock
 
 herbstclient set tree_style '╾│ ├└╼─┐'
+

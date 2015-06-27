@@ -1,4 +1,5 @@
 #!/bin/bash
+setxkbmap de nodeadkeys
 
 cd `dirname "$0"`
 

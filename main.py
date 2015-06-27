@@ -4,10 +4,6 @@ import os
 from os import path
 import time
 
-import panel
-import upower
-import wallpaper
-
 from herbstclient import *
 from daemon import *
 
@@ -43,11 +39,8 @@ def battery_notify_loop():
         time.sleep(30)
 singleton("battery-warning", battery_notify_loop)
 
-# network manager tray app
-command_singleton("nm-applet", ("nm-applet",), delay=2)
-
 # volume keys
-command_singleton("volumed", ("xfce4-volumed", "--no-daemon"))
+command_singleton("volumed", ("xfce4-volumed-pulse", "--no-daemon"))
 
 # hotkeys
 command_singleton("hotkeys", ("xbindkeys",))
@@ -68,14 +61,3 @@ for tag in tags:
 
 # make panels
 command_singleton("panel", ("java", "-Xmx100M", "-XX:+PrintGC", "-XX:+PrintGCDateStamps", "-XX:+UseSerialGC", "-jar", "wm.jar"))
-def bind_overlay(key, path):
-    bind(("Mod4", key), ("spawn", os.path.join(os.path.dirname(__file__), path), str(1366)))
-#bind_overlay("plus", "run/toggle.sh")
-bind_overlay("BackSpace", "password/ui.py")
-screens = []
-for monitor in hc_stream("list_monitors"):
-#    print "Preparing monitor " + monitor
-#    panel.launch(monitor[:monitor.index(":")])
-    screens.append(map(int, hc("monitor_rect", monitor).strip().split(" ")))
-
-wallpaper.start(screens)

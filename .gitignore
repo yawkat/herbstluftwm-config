@@ -1,5 +1,7 @@
-old/
 pid/
 log/
 *.pyc
 .cache/
+wm.jar
+config.json
+wallpaper
