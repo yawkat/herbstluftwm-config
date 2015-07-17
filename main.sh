@@ -6,7 +6,7 @@ hc() {
 
 hc emit_hook reload
 
-xsetroot -solid '#002b36'
+#xsetroot -solid '#002b36'
 
 # remove all existing keybindings
 hc keyunbind --all

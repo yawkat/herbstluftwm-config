@@ -60,4 +60,4 @@ for tag in tags:
     i += 1
 
 # make panels
-command_singleton("panel", ("java", "-Xmx100M", "-XX:+PrintGC", "-XX:+PrintGCDateStamps", "-XX:+UseSerialGC", "-jar", "wm.jar"))
+command_singleton("panel", ("java", "-Xmx100M", "-XX:+PrintGC", "-XX:+PrintGCDateStamps", "-XX:+UseSerialGC", "-cp", "classes", "at.yawk.wm.Main"))

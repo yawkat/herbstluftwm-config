@@ -2,6 +2,6 @@ pid/
 log/
 *.pyc
 .cache/
-wm.jar
+classes/
 config.json
 wallpaper
