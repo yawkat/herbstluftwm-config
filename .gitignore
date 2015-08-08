@@ -3,5 +3,7 @@ log/
 *.pyc
 .cache/
 classes/
-config.json
+config.yml
 wallpaper
+hs_err_pid*
+key
