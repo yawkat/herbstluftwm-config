@@ -4,8 +4,6 @@ hc() {
     herbstclient "$@"
 }
 
-hc emit_hook reload
-
 kill $(cat .pid)
 rm .pid
 
@@ -13,6 +11,19 @@ singleton() {
     "$@" &
     echo $! >> .pid
 }
+
+Mod=Mod4   # Use the super key as the main modifier
+hc emit_hook reload
+# remove all existing keybindings
+hc keyunbind --all
+
+hc rename default 1
+
+for i in $(seq 0 9); do
+    hc add $i
+    hc keybind $Mod-$i use $i
+    hc keybind $Mod-Shift-$i move $i
+done
 
 singleton java \
     -Xmx100M \
@@ -22,20 +33,7 @@ singleton java \
     -XX:+PrintGCDetails \
     -XX:+PrintGCTimeStamps \
     -XX:+UseSerialGC \
-    -cp classes at.yawk.wm.Main
-
-Mod=Mod4   # Use the super key as the main modifier
-
-hc rename default 0
-
-for i in $(seq 1 9) 0; do
-    hc add $i
-    hc keybind $Mod-$i use_index $i
-    hc keybind $Mod-Shift-$i move_index $i
-done
-
-# remove all existing keybindings
-hc keyunbind --all
+    -cp classes at.yawk.wm.Main > /dev/null
 
 # keybindings
 
