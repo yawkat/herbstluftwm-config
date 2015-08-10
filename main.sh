@@ -26,13 +26,16 @@ for i in $(seq 0 9); do
 done
 
 singleton java \
-    -Xmx100M \
+    -Xmx256M \
+    -XX:InitialHeapSize=256M \
+    -XX:MinHeapFreeRatio=10 \
+    -XX:MaxHeapFreeRatio=30 \
     -Djava.library.path=classes/lib/x86_64/linux \
     -Dcom.lambdaworks.jni.loader=sys \
     -Xloggc:log/wm.gc.log \
     -XX:+PrintGCDetails \
     -XX:+PrintGCTimeStamps \
-    -XX:+UseSerialGC \
+    -XX:+UseParallelGC \
     -cp classes at.yawk.wm.Main > /dev/null
 
 # keybindings
@@ -148,6 +151,8 @@ hc keybind XF86Launch9 spawn setxkbmap us
 
 hc keybind $Mod-period spawn xbacklight +10
 hc keybind $Mod-comma spawn xbacklight -10
+hc keybind XF86MonBrightnessUp spawn xbacklight +10
+hc keybind XF86MonBrightnessDown spawn xbacklight -10
 
 hc set default_frame_layout 2
 
