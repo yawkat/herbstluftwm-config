@@ -4,11 +4,4 @@ setxkbmap de nodeadkeys
 cd `dirname "$0"`
 
 mkdir -p log
-mkdir -p pid
-
-run() {
-    ./$1 > log/$1.out 2> log/$1.err
-}
-
-run main.sh
-run main_daemon.py
+./main.sh > log/boot.out 2> log/boot.err

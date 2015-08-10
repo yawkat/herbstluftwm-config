@@ -1,6 +1,8 @@
-pid/
+# PID file
+.pid
+# Log Files
 log/
-*.pyc
+# Status bar stuff
 .cache/
 classes/
 config.yml

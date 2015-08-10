@@ -1,18 +1,41 @@
 #!/bin/bash
 
-hc() {
-    herbstclient "$@"
-}
+alias hc=herbstclient
 
 hc emit_hook reload
 
-#xsetroot -solid '#002b36'
+kill $(cat .pid)
+rm .pid
+
+singleton() {
+    "$@" &
+    echo $! >> .pid
+}
+
+singleton java \
+    -Xmx100M \
+    -Djava.library.path=classes/lib/x86_64/linux \
+    -Dcom.lambdaworks.jni.loader=sys \
+    -XX:+PrintGC \
+    -XX:+PrintGCDetails \
+    -XX:+PrintGCTimeStamps \
+    -XX:+UseSerialGC \
+    -cp classes at.yawk.wm.Main
+
+Mod=Mod4   # Use the super key as the main modifier
+
+hc rename default 0
+
+for i in $(seq 1 9) 0; do
+    hc add $i
+    hc keybind $Mod-$i use_index $i
+    hc keybind $Mod-Shift-$i move_index $i
+done
 
 # remove all existing keybindings
 hc keyunbind --all
 
 # keybindings
-Mod=Mod4   # Use the super key as the main modifier
 
 hc keybind $Mod-Shift-r reload
 hc keybind Mod1-F4 close
@@ -133,3 +156,4 @@ hc unlock
 
 herbstclient set tree_style '╾│ ├└╼─┐'
 
+singleton xfce4-volumed-pulse --no-daemon
