@@ -1,6 +1,8 @@
 #!/bin/bash
 
-alias hc=herbstclient
+hc() {
+    herbstclient "$@"
+}
 
 hc emit_hook reload
 
@@ -16,7 +18,7 @@ singleton java \
     -Xmx100M \
     -Djava.library.path=classes/lib/x86_64/linux \
     -Dcom.lambdaworks.jni.loader=sys \
-    -XX:+PrintGC \
+    -Xloggc:log/wm.gc.log \
     -XX:+PrintGCDetails \
     -XX:+PrintGCTimeStamps \
     -XX:+UseSerialGC \
