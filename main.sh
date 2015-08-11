@@ -19,7 +19,7 @@ hc keyunbind --all
 
 hc rename default 1
 
-for i in $(seq 0 9); do
+for i in $(seq 1 9) 0; do
     hc add $i
     hc keybind $Mod-$i use $i
     hc keybind $Mod-Shift-$i move $i
