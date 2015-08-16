@@ -17,6 +17,7 @@ hc emit_hook reload
 # remove all existing keybindings
 hc keyunbind --all
 
+hc set default_frame_layout 2
 hc rename default 1
 
 for i in $(seq 1 9) 0; do
@@ -136,16 +137,6 @@ hc rule --class=Thunderbird --tag=0
 hc rule --class=Rhythmbox --tag=0
 hc rule --class=Sublime_text --tag=2
 
-db="dbus-send --print-reply --dest=org.mpris.MediaPlayer2.spotify /org/mpris/MediaPlayer2"
-hc keybind $Mod-Pause spawn $db org.mpris.MediaPlayer2.Player.PlayPause
-hc keybind $Mod-Insert spawn $db org.mpris.MediaPlayer2.Player.Previous
-hc keybind $Mod-Delete spawn $db org.mpris.MediaPlayer2.Player.Next
-
-hc keybind XF86AudioPlay spawn $db org.mpris.MediaPlayer2.Player.PlayPause
-hc keybind XF86AudioStop spawn $db org.mpris.MediaPlayer2.Player.Stop
-hc keybind XF86AudioPrev spawn $db org.mpris.MediaPlayer2.Player.Previous
-hc keybind XF86AudioNext spawn $db org.mpris.MediaPlayer2.Player.Next
-
 hc keybind XF86Launch8 spawn setxkbmap de nodeadkeys
 hc keybind XF86Launch9 spawn setxkbmap us
 
@@ -153,8 +144,6 @@ hc keybind $Mod-period spawn xbacklight +10
 hc keybind $Mod-comma spawn xbacklight -10
 hc keybind XF86MonBrightnessUp spawn xbacklight +10
 hc keybind XF86MonBrightnessDown spawn xbacklight -10
-
-hc set default_frame_layout 2
 
 # unlock, just to be sure
 hc unlock
