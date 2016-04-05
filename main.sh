@@ -17,6 +17,8 @@ hc emit_hook reload
 # remove all existing keybindings
 hc keyunbind --all
 
+hc detect_monitors
+
 hc set default_frame_layout 2
 hc rename default 1
 
@@ -25,6 +27,8 @@ for i in $(seq 1 9) 0; do
     hc keybind $Mod-$i use $i
     hc keybind $Mod-Shift-$i move $i
 done
+
+hc detect_monitors
 
 singleton java \
     -Xmx256M \
@@ -37,7 +41,7 @@ singleton java \
     -XX:+PrintGCDetails \
     -XX:+PrintGCTimeStamps \
     -XX:+UseParallelGC \
-    -cp classes at.yawk.wm.Main > /dev/null
+    -cp classes at.yawk.wm.MainKt > /dev/null
 
 # keybindings
 
@@ -139,6 +143,8 @@ hc rule --class=Sublime_text --tag=2
 
 hc keybind XF86Launch8 spawn setxkbmap de nodeadkeys
 hc keybind XF86Launch9 spawn setxkbmap us
+hc keybind $Mod-F1 spawn setxkbmap de nodeadkeys
+hc keybind $Mod-F2 spawn setxkbmap us
 
 hc keybind $Mod-period spawn xbacklight +10
 hc keybind $Mod-comma spawn xbacklight -10
